@@ -1,0 +1,26 @@
+msd_command = 'msd' WS action
+action = primary_action (primary_options)? WS image_name WS runtime WS file_path (docker_command_sequence)?
+
+primary_action = 'build' / 'run' / 'squash' / 'deploy'
+primary_options = (WS primary_option)+
+primary_option = '-d' / '-h' / '--' alphanum+
+
+image_name = image_char+ (':' tag)?
+tag = alphanum+
+runtime = 'mit-scheme' / 'mechanics'
+file_path = ('~' / '/' / '..' / '.' / alphanum) (path_char)*
+
+docker_command_sequence = WS separator docker_options (runtime_command_sequence)?
+docker_options = (WS docker_option)+
+docker_option = ('-' alphanum+ ) / ('--' alphanum+ (WS alphanum+)?)
+
+runtime_command_sequence = WS separator runtime_options
+runtime_options = (WS runtime_option)+
+runtime_option = '--' alphanum+ (WS (file_path / alphanum+))* 
+
+image_char = alphanum / '-' / '_' / '.'
+path_char = alphanum / '/' / '~' / '-' / '_' / '.'
+
+alphanum = [a-zA-Z0-9]
+separator = '--'
+WS = ' '
