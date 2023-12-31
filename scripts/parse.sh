@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash-3.2.57
 
 source ./assoc_multi.sh
 source ./assoc.sh
@@ -37,9 +37,11 @@ parse_command_line() {
 
     _parse_passthrough_options "$@"
 
-    print_map_multi ast
+    #print_map_multi ast
 
     eval "$ast_ref=(\"\${ast[@]}\")"
+    #local ast_str=$(IFS=,; echo "${ast[*]}")
+    #eval "$ast_ref=\"$ast_str\""
 }
 
 

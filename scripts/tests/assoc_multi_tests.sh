@@ -264,8 +264,3 @@ test_get() {
 }
 
 . ./shunit2
-
-
-
-
-. ./shunit2

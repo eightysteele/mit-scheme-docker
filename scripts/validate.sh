@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash-3.2.57
 
 # validates action name from token, returning 0 if valid, otherwise exits.
 validate_action_token() {

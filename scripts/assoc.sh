@@ -1,33 +1,36 @@
-#!/bin/bash
+#!/bin/bash-3.2.57
 
 assoc() {
     local map_name=$1
-    shift  # Skip the map name
+    shift
 
     while [ $# -gt 0 ]; do
         local key=$1
         local value=$2
         local key_name
 
-        key_name=$(get_key_name "$key")
+        key_name=$(get_key_name "$map_name" "$key")
 
         # Set or update the value for the key
         eval "$key_name=\"$value\""
 
         # Add the key to the map if it's not already there
-        if ! contains "$map_name" "$key"; then
+        if ! assoc_contains "$map_name" "$key"; then
+            local key_map=$(get_key_map_name "$map_name")
+            eval "$key_map+=(\"$key\")"
             eval "$map_name+=(\"$key\")"
         fi
 
-        shift 2  # Move to the next key-value pair
+        shift 2
     done
 }
 
-get() {
-    local key=$1
+assoc_get() {
+    local map_name=$1
+    local key=$2
     local key_name
 
-    key_name=$(get_key_name "$key")
+    key_name=$(get_key_name "$map_name" "$key")
 
     eval "echo \${$key_name}"
 }
@@ -38,32 +41,34 @@ dissoc() {
     local key_name
     local key_map
 
-    key_map=$(get_key_map_name "$key")
+    key_map=$(get_key_map_name "$map_name")
 
-    eval "$key_map=(\"\${$map_name[@]}\")"
+    eval "tmp=(\"\${$key_map[@]}\")"
 
-    for i in "${!key_map[@]}"; do
-        if [[ "${key_map[i]}" == "$key" ]]; then
-            unset 'key_map[i]'
+    for i in "${!tmp[@]}"; do
+        if [[ "${tmp[i]}" == "$key" ]]; then
+            unset 'tmp[i]'
         fi
     done
 
-    eval "$map_name=(\"\${key_map[@]}\")"
+    eval "$key_map=(\"\${tmp[@]}\")"
+    eval "$map_name=(\"\${tmp[@]}\")"
 
-    key_name=$(get_key_name "$key")
+    key_name=$(get_key_name "$map_name" "$key")
     eval "unset $key_name"
 }
 
-contains() {
+assoc_contains() {
     local contains_map_name=$1
     local key=$2
     local key_map
 
-    key_map=$(get_key_map_name "$key")
+    key_map=$(get_key_map_name "$contains_map_name")
 
-    eval "local -a ${key_map}=(\"\${$contains_map_name[@]}\")"
+    #eval "local -a ${key_map}=(\"\${$contains_map_name[@]}\")"
+    eval "local -a tmp=(\"\${$key_map[@]}\")"
 
-    for k in "${key_map[@]}"; do
+    for k in "${tmp[@]}"; do
         if [[ "$k" == "$key" ]]; then
             return 0
         fi
@@ -72,82 +77,72 @@ contains() {
     return 1
 }
 
-keys() {
+assoc_keys() {
     local map_name=$1
-    eval "echo \${$map_name[@]}"
+    local key_map=""
+
+    key_map=$(get_key_map_name "$map_name")
+
+    eval "echo \${$key_map[@]}"
 }
 
-size() {
+assoc_size() {
     local map_name=$1
-    local key_map
+    local key_map=""
 
-    key_map=$(get_key_map_name "$key")
+    key_map=$(get_key_map_name "$map_name")
 
-    eval "$key_map=(\"\${$map_name[@]}\")"
+    eval "local -a tmp=(\"\${$key_map[@]}\")"
 
-    echo "${#key_map[@]}"
-}
-
-clear() {
-    local map_name=$1
-    local keys
-
-    # Retrieve all keys
-    eval "keys=(\"\${$map_name[@]}\")"
-
-    # Iterate and remove each key and its value
-    for k in "${keys[@]}"; do
-        local key_name=$(get_key_name "$k")
-        eval "unset $key_name"  # Clear the value
-        dissoc "$map_name" "$k"  # Remove the key from the map
-    done
-
-    # Reset the map array
-    eval "$map_name=()"
+    echo "${#tmp[@]}"
 }
 
 # Name of an array that stores the actual values associated with a key. This
 # name serves as a key in the key map.
 get_key_name() {
-    local key=$1
+    local map_name=$1
+    local key=$2
     local safe_key="${key/:/}"
-    local name="${safe_key}_values"
+    local name="${map_name}_${safe_key}_values"
 
     echo "$name"
 }
 
 # Primary array that stores names of other arrays, where names represent keys.
 get_key_map_name() {
-    echo "key_map"
+    local map_name=$1
+    echo "assoc_map_${map_name}"
 }
 
-clear_key_map() {
-    local key_map
-    local keys
+assoc_clear() {
+    local map_name=$1
+    local key_map=""
 
-    key_map=$(get_key_map_name "$key")
+    key_map=$(get_key_map_name "$map_name")
 
     eval "local -a tmp=(\"\${$key_map[@]}\")"
     for k in "${tmp[@]}"; do
-        dissoc key_nap "$k"
+        dissoc "$map_name" "$k"
     done
     unset '$key_map[@]'
     unset $key_map
+    eval "$map_name=()"
 }
 
 print_map() {
     local map_name=$1
     local specific_key=$2
+    local key_map=$(get_key_map_name "$map_name")
 
-    eval "local -a key_map=(\"\${$map_name[@]}\")"
+    eval "local -a tmp=(\"\${$key_map[@]}\")"
 
     if [[ -n "$specific_key" ]]; then
-        local key_name=$(get_key_name "$specific_key")
+        local key_name=$(get_key_name "$map_name" "$specific_key")
         eval "local value=\"\${$key_name}\""
         echo "$specific_key -> $value"
     else
-        for key in "${key_map[@]}"; do
-            local key_name=$(get_key_name "$key")
+        for key in "${tmp[@]}"; do
+            local key_name=$(get_key_name "$map_name" "$key")
             eval "local value=\"\${$key_name}\""
             echo "$key -> $value"
         done

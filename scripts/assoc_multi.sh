@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash-3.2.57
 
 assoc_multi() {
     local map_name=$1
@@ -116,16 +116,16 @@ get_key_map_name_multi() {
 }
 
 clear_key_map_multi() {
-    local key_map
+    local key_map=$1
     local keys
 
     key_map=$(get_key_map_name_multi "$key")
 
     eval "local -a tmp=(\"\${$key_map[@]}\")"
     for k in "${tmp[@]}"; do
-        dissoc key_nap "$k"
+        dissoc key_map "$k"
     done
-    unset '$key_map[@]'
+    #unset '$key_map[@]'
     unset $key_map
 }
 

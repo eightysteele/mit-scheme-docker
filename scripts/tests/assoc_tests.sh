@@ -2,14 +2,8 @@
 
 oneTimeSetUp() {
     source ../assoc.sh
-}
-
-setUp() {
-    clear map
-}
-
-tearDown() {
-    clear map
+    #source ../common.sh
+    #common_debug_enable "assoc.sh" "get"
 }
 
 suite() {
@@ -25,77 +19,108 @@ suite() {
 
 test_assoc() {
     local result
+    local -a map=()
 
     assoc map :key1 "val1"
     $_ASSERT_TRUE_ $?
 
-    # Test getting value for :key1
-    result=$(get :key1)
+    result=$(assoc_get map :key1)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '"val1"' "\"$result\""
+
+    assoc_clear map
 }
 
 test_assoc_multiple_pairs() {
     local result
+    local -a map=()
 
     assoc map :key1 "val1" :key2 "val2"
     $_ASSERT_TRUE_ $?
 
-    # Test getting value for :key1 and :key2
-    result=$(get :key1)
+    result=$(assoc_get map :key1)
     $_ASSERT_EQUALS_ '"val1"' "\"$result\""
 
-    result=$(get :key2)
+    result=$(assoc_get map :key2)
     $_ASSERT_EQUALS_ '"val2"' "\"$result\""
+
+    assoc_clear map
 }
 
 test_assoc_overwrite_keys() {
     local result
+    local -a map=()
 
-    # Add duplicate keys with different values
     assoc map :key1 "initial_val1" :key1 "final_val1"
     $_ASSERT_TRUE_ $?
 
-    # Test for :key1, expecting the last value "final_val1"
-    result=$(get :key1)
+    result=$(assoc_get map :key1)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '"final_val1"' "\"$result\""
+
+    assoc_clear map
 }
 
 test_dissoc() {
     local result
+    local -a map=()
 
     assoc map :key1 "val1"
     dissoc map :key1
     $_ASSERT_TRUE_ $?
 
-    result=$(get :key1)
+    result=$(assoc_get map :key1)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '""' "\"$result\""
+
+    assoc_clear map
 }
 
 test_get() {
     local result
+    local -a map1=()
+    local -a map2=()
 
-    assoc map :key1 "val1"
-    result=$(get :key1)
+    assoc map1 :key1 "val1"
+    assoc map2 :key2 "val2"
+
+    result=$(assoc_get map1 :key1)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '"val1"' "\"$result\""
+
+    result=$(assoc_get map2 :key2)
+    $_ASSERT_TRUE_ $?
+    $_ASSERT_EQUALS_ '"val2"' "\"$result\""
+
+    assoc_clear map1
+    assoc_clear map2
 }
 
 test_contains() {
+    local -a map=()
+
     assoc map :key1 "val1"
 
-    contains map :key1
+    assoc_contains map :key1
     $_ASSERT_TRUE_ $?
 
-    contains map :key2
+    assoc_contains map :key2
     $_ASSERT_FALSE_ $?
+
+    assoc_clear map
 }
 
 test_size() {
+    local -a map=()
     local result
 
     assoc map :key1 "val1"
     assoc map :key2 "val2"
-    result=$(size map)
+    result=$(assoc_size map)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '2' "$result"
+
+    assoc_clear map
 }
 
 test_keys() {
@@ -103,8 +128,11 @@ test_keys() {
 
     assoc map :key1 "val1"
     assoc map :key2 "val2"
-    result=$(keys map)
+    result=$(assoc_keys map)
+    $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
+
+    assoc_clear map
 }
 
 . ./shunit2

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash-3.2.57 
 
 source ./parse.sh
 
@@ -9,26 +9,7 @@ msd_build_ast() {
 msd_interpret_ast() {
 
     case "$action" in
-        create)
-            validate_file_exists "$argument1"
-            echo "Creating file: $argument1"
-            touch "$argument1"
-            ;;
-        delete)
-            validate_file_exists "$argument1"
-            echo "Deleting file: $argument1"
-            rm "$argument1"
-            ;;
-        rename)
-            validate_file_exists "$argument1"
-            if [[ -n "$argument3" ]]; then
-                validate_directory_exists "$argument3"
-                echo "Renaming file from $argument1 to $argument2 in directory $argument3"
-                mv "$argument1" "$argument3/$argument2"
-            else
-                echo "Renaming file from $argument1 to $argument2"
-                mv "$argument1" "$argument2"
-            fi
+        build)
             ;;
         *)
             echo "No valid action specified"
@@ -40,16 +21,42 @@ msd_interpret_ast() {
 # Main execution function
 msd_execute() {
     local -a command=()
-    local -a ast=()
-    parse_command_line "ast" "$@"
-    echo "${ast[@]}"
-    local action=$(get :action)
-    echo "action: $action"
-    #build_ast "$@"
-    #interpret_ast
+    local -a ast_root=()
+    parse_command_line ast_root "$@"
+    print_map_multi ast_root
 }
 
 command_line="$@"
 IFS=' ' read -r -a command_line_args <<< "$command_line"
 msd_execute "${command_line_args[@]}"
 
+
+# foo() {
+#     local -a ast=(1 2 3)
+#     local ast_str=$(IFS=,; echo "${ast[*]}")
+#     eval "$1=\"$ast_str\""
+# }
+
+# bar() {
+#     local my_ast_str
+#     local -a my_ast
+#     foo my_ast_str
+
+#     IFS=, read -r -a my_ast <<< "$my_ast_str"
+#     echo "${my_ast[@]}"
+# }
+
+#bar
+foo() {
+    local ast_ref="$1"
+    local -a ast=(1 2 3)
+    eval "$ast_ref=(\"\${ast[@]}\")"
+}
+
+bar() {
+    local -a ast2=()
+    foo ast2
+    echo "${ast2[@]}"
+}
+
+#bar
