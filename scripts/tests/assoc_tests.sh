@@ -66,7 +66,7 @@ test_dissoc() {
     local -a map=()
 
     assoc_set map :key1 "val1"
-    dissoc map :key1
+    assoc_remove map :key1
     $_ASSERT_TRUE_ $?
 
     result=$(assoc_get map :key1)
