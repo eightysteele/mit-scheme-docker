@@ -115,25 +115,25 @@ test_size() {
     local -a map=()
     local result
 
+    assoc_clear map
+
     assoc_set map :key1 "val1"
     assoc_set map :key2 "val2"
     result=$(assoc_size map)
     $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '2' "$result"
-
-    assoc_clear map
 }
 
 test_keys() {
     local result
+    local -a map=()
+    assoc_clear map
 
     assoc_set map :key1 "val1"
     assoc_set map :key2 "val2"
     result=$(assoc_keys map)
     $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
-
-    assoc_clear map
 }
 
 . ./shunit2

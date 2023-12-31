@@ -7,6 +7,12 @@ assoc_set() {
     local internal_map=""
     local internal_key=""
 
+    internal_map=$(_assoc_get_internal_map_name "$caller_map")
+    #if [[ $(assoc_size "$internal_map") -eq 0 ]]; then
+        #eval "declare -a ${internal_map}"
+        # todo: do i need this?
+    #fi
+
     while [ $# -gt 0 ]; do
         local key=$1
         local value=$2
@@ -16,9 +22,10 @@ assoc_set() {
         eval "$internal_key=\"$value\""
 
         if ! assoc_contains "$caller_map" "$key"; then
-            internal_map=$(_assoc_get_internal_map_name "$caller_map")
             eval "$internal_map+=(\"$key\")"
             eval "$caller_map+=(\"$key\")"
+        else
+            echo "HUH"
         fi
 
         shift 2
@@ -85,7 +92,6 @@ assoc_keys() {
     eval "echo \${$internal_map[@]}"
 }
 
-# copy to tmp needed?
 assoc_size() {
     local caller_map=$1
     local internal_map=""
@@ -94,6 +100,7 @@ assoc_size() {
 
     eval "local -a tmp=(\"\${$internal_map[@]}\")"
 
+    # TODO why doesn't this work with internal_map? why is internal_map not populatin?
     echo "${#tmp[@]}"
 }
 
@@ -136,8 +143,6 @@ assoc_print() {
     fi
 }
 
-# Name of an array that stores the actual values associated with a key. This
-# name serves as a key in the key map.
 _assoc_get_internal_key_name() {
     local caller_map=$1
     local key=$2
@@ -147,7 +152,6 @@ _assoc_get_internal_key_name() {
     echo "$name"
 }
 
-# Primary array that stores names of other arrays, where names represent keys.
 _assoc_get_internal_map_name() {
     local caller_map=$1
     echo "assoc_map_${caller_map}"
