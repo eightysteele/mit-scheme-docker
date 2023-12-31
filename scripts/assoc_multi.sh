@@ -1,67 +1,77 @@
 #!/bin/bash
 
-assoc_multi() {
-    local map_name=$1
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$DIR/assoc.sh"
+
+assoc_multi_set() {
+    local caller_map=$1
     shift
 
+    local internal_map=""
+    local internal_key=""
+
     while [ $# -gt 0 ]; do
-        local key=$1
-        local value=$2
-        local key_name
+        local key="$1"
+        local value="$2"
 
-        if ! contains_multi "$map_name" "$key"; then
-            eval "$map_name+=(\"$key\")"
+        internal_key=$(_assoc_multi_get_internal_key_name "$caller_map" "$key")
+        eval "$internal_key+=(\"$value\")"
+
+        if ! assoc_multi_contains "$caller_map" "$key"; then
+            internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
+            eval "$internal_map+=(\"$key\")"
+            eval "$caller_map+=(\"$key\")"
+
         fi
-
-        key_name=$(get_key_name_multi "$key")
-        eval "$key_name+=(\"$value\")"
 
         shift 2
     done
 }
 
-get_multi() {
-    local key=$1
-    local key_name
+assoc_multi_get() {
+    local caller_map=$1
+    local caller_key=$2
+    local internal_key=""
 
-    key_name=$(get_key_name_multi "$key")
+    internal_key=$(_assoc_multi_get_internal_key_name "$caller_map" "$caller_key")
 
-    eval "echo \${$key_name[@]}"
+    eval "echo \${$internal_key[@]}"
 }
 
-dissoc_multi() {
-    local map_name=$1
-    local key=$2
-    local key_name
-    local key_map
+assoc_multi_remove() {
+    local caller_map=$1
+    local caller_key=$2
+    local internal_map=""
+    local internal_key=""
 
-    key_map=$(get_key_map_name_multi "$key")
+    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
 
-    eval "$key_map=(\"\${$map_name[@]}\")"
+    eval "local -a tmp=(\"\${$internal_map[@]}\")"
 
-    for i in "${!key_map[@]}"; do
-        if [[ "${key_map[i]}" == "$key" ]]; then
-            unset 'key_map[i]'
+    for i in "${!tmp[@]}"; do
+        if [[ "${tmp[i]}" == "$caller_key" ]]; then
+            unset 'tmp[i]'
         fi
     done
 
-    eval "$map_name=(\"\${key_map[@]}\")"
+    eval "$internal_map=(\"\${tmp[@]}\")"
+    eval "$caller_map=(\"\${tmp[@]}\")"
 
-    key_name=$(get_key_name_multi "$key")
-    eval "unset $key_name"
+    internal_key=$(_assoc_multi_get_internal_key_name "$caller_map" "$caller_key")
+    eval "unset $internal_key"
 }
 
-contains_multi() {
-    local contains_map_name=$1
-    local key=$2
-    local key_map
+assoc_multi_contains() {
+    local contains_caller_map=$1
+    local caller_key=$2
+    local internal_map=""
 
-    key_map=$(get_key_map_name_multi "$key")
+    internal_map=$(_assoc_multi_get_internal_map_name "$contains_caller_map")
 
-    eval "local -a ${key_map}=(\"\${$contains_map_name[@]}\")"
+    eval "local -a tmp=(\"\${$internal_map[@]}\")"
 
-    for k in "${key_map[@]}"; do
-        if [[ "$k" == "$key" ]]; then
+    for k in "${tmp[@]}"; do
+        if [[ "$k" == "$caller_key" ]]; then
             return 0
         fi
     done
@@ -69,81 +79,78 @@ contains_multi() {
     return 1
 }
 
-keys_multi() {
-    local map_name=$1
-    eval "echo \${$map_name[@]}"
+assoc_multi_keys() {
+    local caller_map=$1
+    local internal_map=""
+
+    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
+
+    eval "echo \${$internal_map[@]}"
 }
 
-size_multi() {
-    local map_name=$1
-    local key_map
+# delegate to assoc_size
+assoc_multi_size() {
+    local caller_map=$1
+    local internal_map=""
 
-    key_map=$(get_key_map_name_multi "$key")
+    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
 
-    eval "$key_map=(\"\${$map_name[@]}\")"
+    eval "local -a tmp=(\"\${$internal_map[@]}\")"
 
-    echo "${#key_map[@]}"
+    echo "${#tmp[@]}"
 }
 
-clear_multi() {
-    local map_name=$1
-    local key_map
-    local keys
+# delegate to assoc_clear
+assoc_multi_clear() {
+    local caller_map=$1
+    local internal_map=""
 
-    eval "keys=(\"\${$map_name[@]}\")"
+    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
 
-    for k in "${keys[@]}"; do
-        dissoc "$map_name" "$k"
+    eval "local -a tmp=(\"\${$internal_map[@]}\")"
+    for k in "${tmp[@]}"; do
+        assoc_remove "$caller_map" "$k"
     done
 
-    eval "$map_name=()"
+    unset '$internal_map[@]'
+    unset $internal_map
+    eval "$caller_map=()"
 }
 
+assoc_multi_print() {
+    local caller_map=$1
+    local specific_key=$2
+    local internal_map=""
+    local internal_key=""
 
-# Name of an array that stores the actual values associated with a key. This
-# name serves as a key in the key map.
-get_key_name_multi() {
-    local key=$1
+    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
+
+    eval "local -a tmp=(\"\${$internal_map[@]}\")"
+
+    if [[ -n "$specific_key" ]]; then
+        internal_key=$(_assoc_multi_get_internal_key_name "$caller_map" "$specific_key")
+        eval "local -a values=(\"\${$internal_key[@]}\")"
+        echo "$specific_key -> (${values[*]})"
+    else
+        for key in "${tmp[@]}"; do
+            internal_key=$(_assoc_multi_get_internal_key_name "$caller_map" "$key")
+            eval "local -a values=(\"\${$internal_key[@]}\")"
+            echo "$key -> (${values[*]})"
+        done
+    fi
+}
+
+_assoc_multi_get_internal_key_name() {
+    local caller_map=$1
+    local key=$2
     local safe_key="${key/:/}"
-    local name="${safe_key}_values"
+    local name="${caller_map}_${safe_key}_values"
 
     echo "$name"
 }
 
 # Primary array that stores names of other arrays, where names represent keys.
-get_key_map_name_multi() {
-    echo "key_map"
-}
-
-clear_key_map_multi() {
-    local key_map=$1
-    local keys
-
-    key_map=$(get_key_map_name_multi "$key")
-
-    eval "local -a tmp=(\"\${$key_map[@]}\")"
-    for k in "${tmp[@]}"; do
-        dissoc key_map "$k"
-    done
-    #unset '$key_map[@]'
-    unset $key_map
-}
-
-print_map_multi() {
-    local map_name=$1
-    local specific_key=$2
-
-    eval "local -a key_map=(\"\${$map_name[@]}\")"
-
-    if [[ -n "$specific_key" ]]; then
-        local key_name=$(get_key_name_multi "$specific_key")
-        eval "local -a values=(\"\${$key_name[@]}\")"
-        echo "$specific_key -> (${values[*]})"
-    else
-        for key in "${key_map[@]}"; do
-            local key_name=$(get_key_name_multi "$key")
-            eval "local -a values=(\"\${$key_name[@]}\")"
-            echo "$key -> (${values[*]})"
-        done
-    fi
+_assoc_multi_get_internal_map_name() {
+    local caller_map=$1
+    echo "assoc_multi_map_${caller_map}"
 }

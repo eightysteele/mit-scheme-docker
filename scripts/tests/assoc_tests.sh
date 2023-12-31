@@ -28,6 +28,7 @@ test_assoc() {
     $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '"val1"' "\"$result\""
 
+    assoc_print map
     assoc_clear map
 }
 
