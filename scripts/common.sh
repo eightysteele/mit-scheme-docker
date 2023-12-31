@@ -1,4 +1,4 @@
-#!/bin/bash-3.2.57
+#!/bin/bash
 
 DEBUG_LOGGING=0
 DEBUG_SCRIPT_NAME=""

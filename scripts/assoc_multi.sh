@@ -1,4 +1,4 @@
-#!/bin/bash-3.2.57
+#!/bin/bash
 
 assoc_multi() {
     local map_name=$1

@@ -1,6 +1,6 @@
-#!/bin/bash-3.2.57
+#!/bin/bash
 
-assoc() {
+assoc_set() {
     local map_name=$1
     shift
 
@@ -9,14 +9,14 @@ assoc() {
         local value=$2
         local key_name
 
-        key_name=$(get_key_name "$map_name" "$key")
+        key_name=$(_get_internal_key_name "$map_name" "$key")
 
         # Set or update the value for the key
         eval "$key_name=\"$value\""
 
         # Add the key to the map if it's not already there
         if ! assoc_contains "$map_name" "$key"; then
-            local key_map=$(get_key_map_name "$map_name")
+            local key_map=$(_get_internal_map_name "$map_name")
             eval "$key_map+=(\"$key\")"
             eval "$map_name+=(\"$key\")"
         fi
@@ -30,7 +30,7 @@ assoc_get() {
     local key=$2
     local key_name
 
-    key_name=$(get_key_name "$map_name" "$key")
+    key_name=$(_get_internal_key_name "$map_name" "$key")
 
     eval "echo \${$key_name}"
 }
@@ -41,7 +41,7 @@ dissoc() {
     local key_name
     local key_map
 
-    key_map=$(get_key_map_name "$map_name")
+    key_map=$(_get_internal_map_name "$map_name")
 
     eval "tmp=(\"\${$key_map[@]}\")"
 
@@ -54,7 +54,7 @@ dissoc() {
     eval "$key_map=(\"\${tmp[@]}\")"
     eval "$map_name=(\"\${tmp[@]}\")"
 
-    key_name=$(get_key_name "$map_name" "$key")
+    key_name=$(_get_internal_key_name "$map_name" "$key")
     eval "unset $key_name"
 }
 
@@ -63,9 +63,8 @@ assoc_contains() {
     local key=$2
     local key_map
 
-    key_map=$(get_key_map_name "$contains_map_name")
+    key_map=$(_get_internal_map_name "$contains_map_name")
 
-    #eval "local -a ${key_map}=(\"\${$contains_map_name[@]}\")"
     eval "local -a tmp=(\"\${$key_map[@]}\")"
 
     for k in "${tmp[@]}"; do
@@ -81,7 +80,7 @@ assoc_keys() {
     local map_name=$1
     local key_map=""
 
-    key_map=$(get_key_map_name "$map_name")
+    key_map=$(_get_internal_map_name "$map_name")
 
     eval "echo \${$key_map[@]}"
 }
@@ -90,7 +89,7 @@ assoc_size() {
     local map_name=$1
     local key_map=""
 
-    key_map=$(get_key_map_name "$map_name")
+    key_map=$(_get_internal_map_name "$map_name")
 
     eval "local -a tmp=(\"\${$key_map[@]}\")"
 
@@ -99,7 +98,7 @@ assoc_size() {
 
 # Name of an array that stores the actual values associated with a key. This
 # name serves as a key in the key map.
-get_key_name() {
+_get_internal_key_name() {
     local map_name=$1
     local key=$2
     local safe_key="${key/:/}"
@@ -109,7 +108,7 @@ get_key_name() {
 }
 
 # Primary array that stores names of other arrays, where names represent keys.
-get_key_map_name() {
+_get_internal_map_name() {
     local map_name=$1
     echo "assoc_map_${map_name}"
 }
@@ -118,7 +117,7 @@ assoc_clear() {
     local map_name=$1
     local key_map=""
 
-    key_map=$(get_key_map_name "$map_name")
+    key_map=$(_get_internal_map_name "$map_name")
 
     eval "local -a tmp=(\"\${$key_map[@]}\")"
     for k in "${tmp[@]}"; do
@@ -132,17 +131,17 @@ assoc_clear() {
 print_map() {
     local map_name=$1
     local specific_key=$2
-    local key_map=$(get_key_map_name "$map_name")
+    local key_map=$(_get_internal_map_name "$map_name")
 
     eval "local -a tmp=(\"\${$key_map[@]}\")"
 
     if [[ -n "$specific_key" ]]; then
-        local key_name=$(get_key_name "$map_name" "$specific_key")
+        local key_name=$(_get_interal_key_name "$map_name" "$specific_key")
         eval "local value=\"\${$key_name}\""
         echo "$specific_key -> $value"
     else
         for key in "${tmp[@]}"; do
-            local key_name=$(get_key_name "$map_name" "$key")
+            local key_name=$(_get_interal_key_name "$map_name" "$key")
             eval "local value=\"\${$key_name}\""
             echo "$key -> $value"
         done

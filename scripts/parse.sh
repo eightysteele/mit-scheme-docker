@@ -1,4 +1,4 @@
-#!/bin/bash-3.2.57
+#!/bin/bash
 
 source ./assoc_multi.sh
 source ./assoc.sh

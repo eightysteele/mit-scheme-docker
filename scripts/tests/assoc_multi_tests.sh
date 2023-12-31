@@ -27,7 +27,7 @@ test_assoc_duplicate_keys() {
     local result
     local key_name
 
-    assoc map \
+    assoc_set map \
           :key1 "initial_val1" \
           :key1 "final_val1" \
           :key2 "initial_val2" \
@@ -35,13 +35,13 @@ test_assoc_duplicate_keys() {
     $_ASSERT_TRUE_ $?
 
     # Test for :key1, expecting the last value "final_val1"
-    key_name=$(get_key_name :key1)
+    key_name=$(_get_interal_key_name :key1)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"initial_val1 final_val1"' '"$result_str"'
 
     # Test for :key2, expecting the last value "final_val2"
-    key_name=$(get_key_name :key2)
+    key_name=$(_get_interal_key_name :key2)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"initial_val2 final_val2"' '"$result_str"'
@@ -55,23 +55,23 @@ test_assoc_multiple_pairs() {
     local result
     local key_name
 
-    assoc map :key1 "val1" :key2 "val2" :key3 "val3"
+    assoc_set map :key1 "val1" :key2 "val2" :key3 "val3"
     $_ASSERT_TRUE_ $?
 
     # Test for :key1
-    key_name=$(get_key_name :key1)
+    key_name=$(_get_interal_key_name :key1)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"val1"' '"$result_str"'
 
     # Test for :key2
-    key_name=$(get_key_name :key2)
+    key_name=$(_get_interal_key_name :key2)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"val2"' '"$result_str"'
 
     # Test for :key3
-    key_name=$(get_key_name :key3)
+    key_name=$(_get_interal_key_name :key3)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"val3"' '"$result_str"'
@@ -87,8 +87,8 @@ test_keys() {
     result=$(keys map)
     $_ASSERT_EQUALS_ '""' "\"$result\""
 
-    assoc map :key1 "val1"
-    assoc map :key2 "val2"
+    assoc_set map :key1 "val1"
+    assoc_set map :key2 "val2"
 
     result=$(keys map)
     $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
@@ -97,8 +97,8 @@ test_keys() {
 test_size() {
     local result
 
-    assoc map :key1 "val1"
-    assoc map :key2 "val2"
+    assoc_set map :key1 "val1"
+    assoc_set map :key2 "val2"
 
     # Test size of the map
     result=$(size map)
@@ -113,7 +113,7 @@ test_size() {
 test_contains() {
     local result
 
-    assoc map :key1 "val1"
+    assoc_set map :key1 "val1"
 
     # Test contains for an existing key
     contains map :key1
@@ -133,9 +133,9 @@ test_assoc() {
     clear map
 
     # Test adding a single value to a new key
-    assoc map :key1 "val1"
+    assoc_set map :key1 "val1"
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key1)
+    key_name=$(_get_interal_key_name :key1)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     result="${key_name[*]}"
@@ -144,11 +144,11 @@ test_assoc() {
     clear map
 
     # Test adding multiple values to the same key
-    assoc map :key1 "val2"
+    assoc_set map :key1 "val2"
     $_ASSERT_TRUE_ $?
-    assoc map :key1 "val3"
+    assoc_set map :key1 "val3"
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key1)
+    key_name=$(_get_interal_key_name :key1)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"val2 val3"' '"$result_str"'
@@ -156,18 +156,18 @@ test_assoc() {
     clear map
 
     # Test adding values to a different key
-    assoc map :key2 "val4"
+    assoc_set map :key2 "val4"
     $_ASSERT_TRUE_ $?
-    assoc map :key2 "val5"
+    assoc_set map :key2 "val5"
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key2)
+    key_name=$(_get_interal_key_name :key2)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"val4 val5"' '"$result_str"'
 
     # Test if the map array is updated correctly
-    assoc map :key3 "foo"
-    assoc map :key4 "bar"
+    assoc_set map :key3 "foo"
+    assoc_set map :key4 "bar"
     result_str="${map[*]}"
     $_ASSERT_EQUALS_ '":key2 :key3 :key4"' '"$result_str"'
 
@@ -175,9 +175,9 @@ test_assoc() {
 
     # Test adding a value with spaces
     val="a value with spaces"
-    assoc map :key3 "$val"
+    assoc_set map :key3 "$val"
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key3)
+    key_name=$(_get_interal_key_name :key3)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ "\"$val\"" "\"$result_str\""
@@ -185,8 +185,8 @@ test_assoc() {
     clear map
 
     # Test adding an empty value
-    assoc map :key4 ""
-    key_name=$(get_key_name :key4)
+    assoc_set map :key4 ""
+    key_name=$(_get_interal_key_name :key4)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '""' "\"$result_str\""
@@ -194,9 +194,9 @@ test_assoc() {
     clear map
 
     # Test adding a numeric value
-    assoc map :key5 123
+    assoc_set map :key5 123
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key5)
+    key_name=$(_get_interal_key_name :key5)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '"123"' '"$result_str"'
@@ -209,15 +209,15 @@ test_dissoc() {
     clear map
 
     # Setup: Add values to multiple keys
-    assoc map :key1 "val1"
-    assoc map :key1 "val2"
-    assoc map :key2 "val3"
-    assoc map :key3 "val4"
+    assoc_set map :key1 "val1"
+    assoc_set map :key1 "val2"
+    assoc_set map :key2 "val3"
+    assoc_set map :key3 "val4"
 
     # Test removing a key and its values
     dissoc map :key1
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key1)
+    key_name=$(_get_interal_key_name :key1)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '""' '"$result_str"'
@@ -229,7 +229,7 @@ test_dissoc() {
     # Test removing another key and its values
     dissoc map :key2
     $_ASSERT_TRUE_ $?
-    key_name=$(get_key_name :key2)
+    key_name=$(_get_interal_key_name :key2)
     eval "result=(\"\${$key_name[@]}\")"
     result_str="${result[*]}"
     $_ASSERT_EQUALS_ '""' '"$result_str"'
@@ -246,9 +246,9 @@ test_get() {
     clear map
 
     # Setup: Add values to multiple keys
-    assoc map :key1 "val1"
-    assoc map :key1 "val2"
-    assoc map :key2 "val3"
+    assoc_set map :key1 "val1"
+    assoc_set map :key1 "val2"
+    assoc_set map :key2 "val3"
 
     # Test getting values for a key with multiple values
     result=$(get :key1)

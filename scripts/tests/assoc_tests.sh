@@ -21,7 +21,7 @@ test_assoc() {
     local result
     local -a map=()
 
-    assoc map :key1 "val1"
+    assoc_set map :key1 "val1"
     $_ASSERT_TRUE_ $?
 
     result=$(assoc_get map :key1)
@@ -35,7 +35,7 @@ test_assoc_multiple_pairs() {
     local result
     local -a map=()
 
-    assoc map :key1 "val1" :key2 "val2"
+    assoc_set map :key1 "val1" :key2 "val2"
     $_ASSERT_TRUE_ $?
 
     result=$(assoc_get map :key1)
@@ -51,7 +51,7 @@ test_assoc_overwrite_keys() {
     local result
     local -a map=()
 
-    assoc map :key1 "initial_val1" :key1 "final_val1"
+    assoc_set map :key1 "initial_val1" :key1 "final_val1"
     $_ASSERT_TRUE_ $?
 
     result=$(assoc_get map :key1)
@@ -65,7 +65,7 @@ test_dissoc() {
     local result
     local -a map=()
 
-    assoc map :key1 "val1"
+    assoc_set map :key1 "val1"
     dissoc map :key1
     $_ASSERT_TRUE_ $?
 
@@ -81,8 +81,8 @@ test_get() {
     local -a map1=()
     local -a map2=()
 
-    assoc map1 :key1 "val1"
-    assoc map2 :key2 "val2"
+    assoc_set map1 :key1 "val1"
+    assoc_set map2 :key2 "val2"
 
     result=$(assoc_get map1 :key1)
     $_ASSERT_TRUE_ $?
@@ -99,7 +99,7 @@ test_get() {
 test_contains() {
     local -a map=()
 
-    assoc map :key1 "val1"
+    assoc_set map :key1 "val1"
 
     assoc_contains map :key1
     $_ASSERT_TRUE_ $?
@@ -114,8 +114,8 @@ test_size() {
     local -a map=()
     local result
 
-    assoc map :key1 "val1"
-    assoc map :key2 "val2"
+    assoc_set map :key1 "val1"
+    assoc_set map :key2 "val2"
     result=$(assoc_size map)
     $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '2' "$result"
@@ -126,8 +126,8 @@ test_size() {
 test_keys() {
     local result
 
-    assoc map :key1 "val1"
-    assoc map :key2 "val2"
+    assoc_set map :key1 "val1"
+    assoc_set map :key2 "val2"
     result=$(assoc_keys map)
     $_ASSERT_TRUE_ $?
     $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
