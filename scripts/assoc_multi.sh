@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 source "$DIR/assoc.sh"
 
 assoc_multi_set() {
@@ -79,28 +80,6 @@ assoc_multi_contains() {
     return 1
 }
 
-assoc_multi_keys() {
-    local caller_map=$1
-    local internal_map=""
-
-    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
-
-    eval "echo \${$internal_map[@]}"
-}
-
-# delegate to assoc_size
-assoc_multi_size() {
-    local caller_map=$1
-    local internal_map=""
-
-    internal_map=$(_assoc_multi_get_internal_map_name "$caller_map")
-
-    eval "local -a tmp=(\"\${$internal_map[@]}\")"
-
-    echo "${#tmp[@]}"
-}
-
-# delegate to assoc_clear
 assoc_multi_clear() {
     local caller_map=$1
     local internal_map=""

@@ -1,15 +1,20 @@
-#!/bin/bash-3.2.57 
+#!/bin/bash
 
-source ./parse.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-msd_build_ast() {
-    echo "hi"
-}
+source "$DIR/parse.sh"
+source "$DIR/assoc_multi.sh"
 
-msd_interpret_ast() {
+msd_interpret() {
+    local interpret_ast="$1"
+    local action=""
+
+    action=$(assoc_multi_get "$interpret_ast" :action)
 
     case "$action" in
         build)
+            echo "build!"
+            assoc_multi_print "$interpret_ast"
             ;;
         *)
             echo "No valid action specified"
@@ -18,45 +23,19 @@ msd_interpret_ast() {
     esac
 }
 
-# Main execution function
 msd_execute() {
-    local -a command=()
-    local -a ast_root=()
-    parse_command_line ast_root "$@"
-    print_map_multi ast_root
+    local -a command_line_tokens=()
+    local -a ast=()
+
+    IFS=' ' read -r -a command_line_tokens <<< "$@"
+    parse_command_line ast "${command_line_tokens[@]}"
+    msd_interpret ast
 }
 
-command_line="$@"
-IFS=' ' read -r -a command_line_args <<< "$command_line"
-msd_execute "${command_line_args[@]}"
+msd_execute "$@"
 
-
-# foo() {
-#     local -a ast=(1 2 3)
-#     local ast_str=$(IFS=,; echo "${ast[*]}")
-#     eval "$1=\"$ast_str\""
-# }
-
-# bar() {
-#     local my_ast_str
-#     local -a my_ast
-#     foo my_ast_str
-
-#     IFS=, read -r -a my_ast <<< "$my_ast_str"
-#     echo "${my_ast[@]}"
-# }
-
-#bar
-foo() {
-    local ast_ref="$1"
-    local -a ast=(1 2 3)
-    eval "$ast_ref=(\"\${ast[@]}\")"
-}
-
-bar() {
-    local -a ast2=()
-    foo ast2
-    echo "${ast2[@]}"
-}
-
-#bar
+# 142
+# 126
+# 144
+# 154
+# 180

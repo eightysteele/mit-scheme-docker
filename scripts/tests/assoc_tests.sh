@@ -13,8 +13,6 @@ suite() {
     suite_addTest test_dissoc
     suite_addTest test_get
     suite_addTest test_contains
-    suite_addTest test_size
-    suite_addTest test_keys
 }
 
 test_assoc() {
@@ -111,29 +109,6 @@ test_contains() {
     assoc_clear map
 }
 
-test_size() {
-    local -a map=()
-    local result
-
-    assoc_clear map
-
-    assoc_set map :key1 "val1"
-    assoc_set map :key2 "val2"
-    result=$(assoc_size map)
-    $_ASSERT_TRUE_ $?
-    $_ASSERT_EQUALS_ '2' "$result"
-}
-
-test_keys() {
-    local result
-    local -a map=()
-    assoc_clear map
-
-    assoc_set map :key1 "val1"
-    assoc_set map :key2 "val2"
-    result=$(assoc_keys map)
-    $_ASSERT_TRUE_ $?
-    $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
-}
-
 . ./shunit2
+
+

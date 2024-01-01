@@ -11,8 +11,6 @@ suite() {
     suite_addTest test_dissoc
     suite_addTest test_get
     suite_addTest test_contains
-    suite_addTest test_size
-    suite_addTest test_keys
 }
 
 test_set_duplicate_keys() {
@@ -46,7 +44,7 @@ test_set_duplicate_keys() {
     $_ASSERT_EQUALS_ '"initial_val2 final_val2"' '"$result_str"'
 
     # Test for the presence of all keys in the map
-    result_str=$(assoc_multi_keys map)
+    result_str="${map[@]}"
     $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result_str\""
 }
 
@@ -81,43 +79,8 @@ test_assoc_multiple_pairs() {
     $_ASSERT_EQUALS_ '"val3"' '"$result_str"'
 
     # Test for the presence of all keys in the map
-    result_str=$(assoc_multi_keys map)
+    result_str="${map[@]}"
     $_ASSERT_EQUALS_ '":key1 :key2 :key3"' "\"$result_str\""
-}
-
-test_keys() {
-    local result
-    local -a map=()
-
-    assoc_multi_clear map
-
-    result=$(assoc_multi_keys map)
-    $_ASSERT_EQUALS_ '""' "\"$result\""
-
-    assoc_multi_set map :key1 "val1"
-    assoc_multi_set map :key2 "val2"
-
-    result=$(assoc_multi_keys map)
-    $_ASSERT_EQUALS_ '":key1 :key2"' "\"$result\""
-}
-
-test_size() {
-    local result
-    local -a map=()
-
-    assoc_multi_clear map
-
-    assoc_multi_set map :key1 "val1"
-    assoc_multi_set map :key2 "val2"
-
-    # Test size of the map
-    result=$(assoc_multi_size map)
-    $_ASSERT_EQUALS_ '2' "$result"
-
-    # Remove a key and test size again
-    assoc_multi_remove map :key1
-    result=$(assoc_multi_size map)
-    $_ASSERT_EQUALS_ '1' "$result"
 }
 
 test_contains() {

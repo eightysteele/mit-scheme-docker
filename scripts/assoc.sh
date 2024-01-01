@@ -8,10 +8,6 @@ assoc_set() {
     local internal_key=""
 
     internal_map=$(_assoc_get_internal_map_name "$caller_map")
-    #if [[ $(assoc_size "$internal_map") -eq 0 ]]; then
-        #eval "declare -a ${internal_map}"
-        # todo: do i need this?
-    #fi
 
     while [ $# -gt 0 ]; do
         local key=$1
@@ -24,8 +20,6 @@ assoc_set() {
         if ! assoc_contains "$caller_map" "$key"; then
             eval "$internal_map+=(\"$key\")"
             eval "$caller_map+=(\"$key\")"
-        else
-            echo "HUH"
         fi
 
         shift 2
@@ -83,27 +77,6 @@ assoc_contains() {
     return 1
 }
 
-assoc_keys() {
-    local caller_map=$1
-    local internal_map=""
-
-    internal_map=$(_assoc_get_internal_map_name "$caller_map")
-
-    eval "echo \${$internal_map[@]}"
-}
-
-assoc_size() {
-    local caller_map=$1
-    local internal_map=""
-
-    internal_map=$(_assoc_get_internal_map_name "$caller_map")
-
-    eval "local -a tmp=(\"\${$internal_map[@]}\")"
-
-    # TODO why doesn't this work with internal_map? why is internal_map not populatin?
-    echo "${#tmp[@]}"
-}
-
 assoc_clear() {
     local caller_map=$1
     local internal_map=""
@@ -156,4 +129,3 @@ _assoc_get_internal_map_name() {
     local caller_map=$1
     echo "assoc_map_${caller_map}"
 }
-
