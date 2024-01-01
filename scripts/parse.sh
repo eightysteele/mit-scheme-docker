@@ -7,7 +7,7 @@ source "$DIR/common.sh"
 source "$DIR/validate.sh"
 
 parse_command_line() {
-    local parse_ast="$1"
+    local ast="$1"
 
     shift 1
 
@@ -16,7 +16,7 @@ parse_command_line() {
 
     validate_action_token "$1"
     action="$1"
-    assoc_multi_set "$parse_ast" :action "$action"
+    assoc_multi_set "$ast" :action "$action"
 
     shift 1
 
@@ -29,19 +29,19 @@ parse_command_line() {
             validate_build_option_tokens "${primary_option_tokens[@]}"
 
             for option in "${primary_option_tokens[@]}"; do
-                assoc_multi_set "$parse_ast" :primary_option_tokens "$option"
+                assoc_multi_set "$ast" :primary_options "$option"
             done
 
             validate_build_arg_tokens "$@"
 
-            assoc_multi_set "$parse_ast" :image_name "$1"
-            assoc_multi_set "$parse_ast" :runtime "$2"
-            assoc_multi_set "$parse_ast" :file_path "$3"
+            assoc_multi_set "$ast" :image_name "$1"
+            assoc_multi_set "$ast" :runtime "$2"
+            assoc_multi_set "$ast" :file_path "$3"
 
             shift 3
     esac
 
-    _parse_passthrough_options "$parse_ast" "$@"
+    _parse_passthrough_options "$ast" "$@"
 }
 
 # parses primary options passed into the action

@@ -6,21 +6,44 @@ source "$DIR/parse.sh"
 source "$DIR/assoc_multi.sh"
 
 msd_interpret() {
-    local interpret_ast="$1"
+    local ast="$1"
     local action=""
 
-    action=$(assoc_multi_get "$interpret_ast" :action)
+    action=$(assoc_multi_get "$ast" :action)
 
     case "$action" in
         build)
             echo "build!"
-            assoc_multi_print "$interpret_ast"
+            msd_interpret_build "$ast"
             ;;
         *)
             echo "No valid action specified"
             exit 1
             ;;
     esac
+}
+
+msd_interpret_build() {
+    local ast="$1"
+    local options=()
+
+    assoc_multi_print "$ast"
+
+    read -r -a options <<< "$(assoc_multi_get "$ast" :primary_options)"
+
+    for option in "${options[@]}"; do
+        case "$option" in
+            *h)
+                echo "help!"
+                ;;
+            *d)
+                echo "dry run!"
+                ;;
+            *)
+                echo "no options, gtg!"
+                ;;
+        esac
+    done
 }
 
 msd_execute() {
