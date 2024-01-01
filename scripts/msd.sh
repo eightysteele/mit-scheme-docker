@@ -4,6 +4,17 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/parse.sh"
 source "$DIR/assoc_multi.sh"
+source "$DIR/build_action.sh"
+
+msd_exit() {
+    local fn="$1"
+    local status="${2:-0}"
+    local msg=""
+
+    msg=$("$fn")
+    echo "$msg"
+    exit "$status"
+}
 
 msd_interpret() {
     local ast="$1"
@@ -13,7 +24,6 @@ msd_interpret() {
 
     case "$action" in
         build)
-            echo "build!"
             msd_interpret_build "$ast"
             ;;
         *)
@@ -33,10 +43,10 @@ msd_interpret_build() {
 
     for option in "${options[@]}"; do
         case "$option" in
-            *h)
-                echo "help!"
+            -h)
+                msd_exit build_action_help
                 ;;
-            *d)
+            -d)
                 echo "dry run!"
                 ;;
             *)
